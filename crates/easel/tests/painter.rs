@@ -130,6 +130,24 @@ const OWN_BOX: Option<&str> = if cfg!(feature = "box-sargent") {
     Some("tonn")
 } else if cfg!(feature = "box-hopper") {
     Some("hopper")
+} else if cfg!(feature = "box-leonardo") {
+    Some("leonardo")
+} else if cfg!(feature = "box-rembrandt") {
+    Some("rembrandt")
+} else if cfg!(feature = "box-monet") {
+    Some("monet")
+} else if cfg!(feature = "box-van-gogh") {
+    Some("van-gogh")
+} else if cfg!(feature = "box-munch") {
+    Some("munch")
+} else if cfg!(feature = "box-picasso") {
+    Some("picasso")
+} else if cfg!(feature = "box-miro") {
+    Some("miro")
+} else if cfg!(feature = "box-dali") {
+    Some("dali")
+} else if cfg!(feature = "box-kahlo") {
+    Some("kahlo")
 } else {
     None
 };

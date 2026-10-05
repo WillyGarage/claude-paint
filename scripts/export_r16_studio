@@ -13,6 +13,8 @@
 #          alma-tadema  (notes/research/<artist>_materials.md) and bin/box, which
 #          tonn         sets the box the painting is painted from; nothing a
 #          hopper       painter can read names another painter
+#          leonardo rembrandt monet van-gogh munch picasso miro dali kahlo
+#                       (round 22: as sargent's, notes/r22/BUILD.md)
 # dest:    a folder that doesn't exist yet (or is empty)
 #
 # dest gets:
@@ -46,7 +48,7 @@
 # box from the log.
 set -euo pipefail
 
-usage() { echo "usage: $0 friedrich|blank|sargent|inness|alma-tadema|tonn|hopper <dest>" >&2; exit 2; }
+usage() { echo "usage: $0 friedrich|blank|sargent|inness|alma-tadema|tonn|hopper|leonardo|rembrandt|monet|van-gogh|munch|picasso|miro|dali|kahlo <dest>" >&2; exit 2; }
 [ $# -eq 2 ] || usage
 profile=$1
 dest=$2
@@ -60,6 +62,15 @@ case "$profile" in
   alma-tadema) box=alma-tadema; materials=alma_tadema_materials.md; own=(Alma-Tadema Tadema) ;;
   tonn) box=tonn; materials=tonn_materials.md; own=(Tonn) ;;
   hopper) box=hopper; materials=hopper_materials.md; own=(Hopper) ;;
+  leonardo) box=leonardo; materials=leonardo_materials.md; own=(Leonardo 'da Vinci' Vinci) ;;
+  rembrandt) box=rembrandt; materials=rembrandt_materials.md; own=(Rembrandt) ;;
+  monet) box=monet; materials=monet_materials.md; own=('Monet(?!ary)') ;;
+  van-gogh) box=van-gogh; materials=van_gogh_materials.md; own=('Van Gogh') ;;
+  munch) box=munch; materials=munch_materials.md; own=(Munch) ;;
+  picasso) box=picasso; materials=picasso_materials.md; own=(Picasso) ;;
+  miro) box=miro; materials=miro_materials.md; own=('Mir[oó]') ;;
+  dali) box=dali; materials=dali_materials.md; own=('Dal[ií]') ;;
+  kahlo) box=kahlo; materials=kahlo_materials.md; own=(Kahlo) ;;
   *) usage ;;
 esac
 # the studio's easel reads its box from bin/box, else EASEL_BOX: not from the

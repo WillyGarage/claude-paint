@@ -41,7 +41,7 @@ refused() {
 }
 
 painter_test=(--test painter the_build_holds_only_its_box_s_tubes -- --exact)
-for f in "" box-sargent box-inness box-alma-tadema box-tonn box-hopper; do
+for f in "" box-sargent box-inness box-alma-tadema box-tonn box-hopper box-leonardo box-rembrandt box-monet box-van-gogh box-munch box-picasso box-miro box-dali box-kahlo; do
   features=(--no-default-features)
   [ -z "$f" ] || features+=(--features "$f")
   passes 3 "paint ${f:-no box}" -p paint "${features[@]}" --lib -- palette::tests::the_catalog palette::tests::every_box

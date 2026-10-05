@@ -64,26 +64,28 @@ pub fn catalog() -> Vec<Tube> {
         // ---- the tube box (round 19)
         tube("lead white", "basic lead carbonate", "#efe9dc", 0.82, 0.8, 1.0, drier::LEAD_WHITE),
         // semi-transparent cobalt glass, weak
-        #[cfg(tube_box)]
+        #[cfg(any(tube_box, feature = "box-rembrandt"))]
         tube("smalt", "cobalt potash glass, coarse", "#5a6e9e", 0.3, 0.55, 0.45, drier::SMALT),
-        #[cfg(tube_box)]
+        #[cfg(any(tube_box, feature = "box-rembrandt"))]
         tube("pale smalt", "a paler grade of smalt", "#8d9bb8", 0.35, 0.55, 0.35, drier::SMALT),
+        #[cfg(any(tube_box, feature = "box-sargent", feature = "box-inness", feature = "box-alma-tadema", feature = "box-tonn", feature = "box-hopper", feature = "box-leonardo", feature = "box-rembrandt", feature = "box-monet", feature = "box-van-gogh", feature = "box-munch", feature = "box-picasso", feature = "box-dali", feature = "box-kahlo"))]
         tube("yellow ochre", "hydrated iron oxide earth", "#b98a36", 0.8, 0.7, 0.8, drier::OCHRE),
-        #[cfg(any(tube_box, feature = "box-sargent", feature = "box-inness", feature = "box-alma-tadema", feature = "box-hopper"))]
+        #[cfg(any(tube_box, feature = "box-sargent", feature = "box-inness", feature = "box-alma-tadema", feature = "box-hopper", feature = "box-leonardo", feature = "box-rembrandt", feature = "box-monet", feature = "box-van-gogh", feature = "box-munch", feature = "box-picasso", feature = "box-miro", feature = "box-dali", feature = "box-kahlo"))]
         tube("red earth", "iron oxide earth", "#9c4a30", 0.85, 0.7, 0.9, drier::RED_EARTH),
-        #[cfg(any(tube_box, feature = "box-sargent"))]
+        #[cfg(any(tube_box, feature = "box-sargent", feature = "box-leonardo", feature = "box-rembrandt", feature = "box-monet", feature = "box-van-gogh", feature = "box-munch", feature = "box-picasso", feature = "box-miro", feature = "box-dali", feature = "box-kahlo"))]
         tube("vermilion", "mercuric sulfide", "#cf3a24", 0.9, 0.75, 1.0, drier::VERMILION),
-        #[cfg(any(tube_box, feature = "box-inness", feature = "box-alma-tadema", feature = "box-tonn"))]
+        #[cfg(any(tube_box, feature = "box-inness", feature = "box-alma-tadema", feature = "box-tonn", feature = "box-leonardo", feature = "box-rembrandt", feature = "box-van-gogh", feature = "box-munch", feature = "box-miro"))]
         tube("raw umber", "iron and manganese oxide earth", "#5c4c3a", 0.8, 0.65, 0.9, drier::UMBER),
+        #[cfg(any(tube_box, feature = "box-sargent", feature = "box-inness", feature = "box-alma-tadema", feature = "box-tonn", feature = "box-hopper", feature = "box-rembrandt", feature = "box-monet", feature = "box-van-gogh", feature = "box-munch", feature = "box-picasso", feature = "box-miro", feature = "box-dali", feature = "box-kahlo"))]
         tube("bone black", "charred bone (carbon, calcium phosphate)", "#1e1b19", 0.9, 0.7, 1.1, drier::BONE_BLACK),
-        #[cfg(any(tube_box, feature = "box-sargent", feature = "box-inness", feature = "box-alma-tadema", feature = "box-hopper"))]
+        #[cfg(any(tube_box, feature = "box-sargent", feature = "box-inness", feature = "box-alma-tadema", feature = "box-hopper", feature = "box-monet", feature = "box-van-gogh", feature = "box-munch", feature = "box-picasso", feature = "box-miro", feature = "box-dali"))]
         tube("cobalt blue", "cobalt aluminate", "#2f55a8", 0.55, 0.6, 0.8, drier::COBALT_BLUE),
-        #[cfg(any(tube_box, feature = "box-sargent"))]
+        #[cfg(any(tube_box, feature = "box-sargent", feature = "box-monet", feature = "box-van-gogh", feature = "box-munch", feature = "box-picasso", feature = "box-kahlo"))]
         tube("chrome yellow", "lead chromate", "#e8b21c", 0.9, 0.7, 1.0, drier::CHROME_YELLOW),
         // Prussian blue transparent and very strong [AP3 pp.196–197]
         // (tinting strength 3, below the sourced "very high", because
         // Mixbox's latent already carries some of a dark pigment's strength)
-        #[cfg(tube_box)]
+        #[cfg(any(tube_box, feature = "box-monet", feature = "box-van-gogh", feature = "box-munch", feature = "box-picasso", feature = "box-miro"))]
         tube("Prussian blue", "iron ferrocyanide", "#172440", 0.35, 0.45, 3.0, drier::PRUSSIAN_BLUE),
         // green earth translucent, weak, short of body [AP1 p.146; FIELD
         // p.129], its masstone from Munsell 7.5G/2.9/1.5 [AP1 Table 1]; its
@@ -92,76 +94,76 @@ pub fn catalog() -> Vec<Tube> {
         tube("green earth", "celadonite and glauconite clay", "#3a4843", 0.2, 0.35, 0.3, drier::OCHRE),
         // cobalt-zinc oxide: semi-transparent, weak, permanent [WEB-co];
         // drying estimated as cobalt's
-        #[cfg(tube_box)]
+        #[cfg(any(tube_box, feature = "box-dali"))]
         tube("Rinmann's green", "cobalt-zinc oxide", "#5f8f76", 0.35, 0.5, 0.4, drier::COBALT_BLUE),
         // verdigris ground in oil: "poor hiding power in oil" [AP2 p.132];
         // copper is a drier (drying rate estimated as smalt's)
-        #[cfg(tube_box)]
+        #[cfg(any(tube_box, feature = "box-leonardo"))]
         tube("copper green", "verdigris ground in oil", "#3f7f6a", 0.25, 0.4, 1.0, drier::SMALT),
         // ---- round 20 (notes/r20/TUBES.md)
-        #[cfg(any(feature = "box-sargent", feature = "box-hopper"))]
+        #[cfg(any(feature = "box-sargent", feature = "box-hopper", feature = "box-monet", feature = "box-van-gogh", feature = "box-munch", feature = "box-picasso", feature = "box-miro", feature = "box-dali", feature = "box-kahlo"))]
         tube("zinc white", "zinc oxide", "#f3f3ef", 0.6, 0.6, 1.0, drier::ZINC_WHITE),
-        #[cfg(feature = "box-tonn")]
+        #[cfg(any(feature = "box-tonn", feature = "box-leonardo", feature = "box-rembrandt"))]
         tube("lead-tin yellow", "lead-tin oxide", "#e3cc6a", 0.85, 0.75, 0.6, drier::LEAD_WHITE),
-        #[cfg(feature = "box-alma-tadema")]
+        #[cfg(any(feature = "box-alma-tadema", feature = "box-monet", feature = "box-dali"))]
         tube("Naples yellow", "lead antimonate", "#e2b964", 0.85, 0.75, 0.6, drier::NAPLES_YELLOW),
-        #[cfg(any(feature = "box-sargent", feature = "box-inness"))]
+        #[cfg(any(feature = "box-sargent", feature = "box-inness", feature = "box-van-gogh", feature = "box-munch", feature = "box-picasso", feature = "box-dali"))]
         tube("lemon chrome", "pale lead chromate with lead sulfate", "#eed83c", 0.8, 0.7, 0.8, drier::CHROME_YELLOW),
-        #[cfg(any(feature = "box-alma-tadema", feature = "box-hopper"))]
+        #[cfg(any(feature = "box-alma-tadema", feature = "box-hopper", feature = "box-monet", feature = "box-munch", feature = "box-miro", feature = "box-dali"))]
         tube("pale cadmium", "cadmium sulfide, a pale grade", "#f0c63c", 0.85, 0.7, 1.1, drier::CADMIUM),
-        #[cfg(any(feature = "box-alma-tadema", feature = "box-hopper"))]
+        #[cfg(any(feature = "box-alma-tadema", feature = "box-hopper", feature = "box-monet", feature = "box-van-gogh", feature = "box-munch", feature = "box-miro", feature = "box-dali"))]
         tube("deep cadmium", "cadmium sulfide, a deep grade", "#e8861e", 0.9, 0.6, 1.2, drier::CADMIUM),
-        #[cfg(any(feature = "box-sargent", feature = "box-inness", feature = "box-tonn", feature = "box-hopper"))]
+        #[cfg(any(feature = "box-sargent", feature = "box-inness", feature = "box-tonn", feature = "box-hopper", feature = "box-monet", feature = "box-van-gogh", feature = "box-munch", feature = "box-picasso", feature = "box-miro", feature = "box-dali", feature = "box-kahlo"))]
         tube("cadmium yellow", "cadmium sulfide", "#e8a51f", 0.85, 0.7, 1.1, drier::CADMIUM),
         #[cfg(feature = "box-sargent")]
         tube("Indian yellow", "magnesium and calcium euxanthate", "#e1a11e", 0.15, 0.4, 0.8, drier::INDIAN_YELLOW),
-        #[cfg(feature = "box-sargent")]
+        #[cfg(any(feature = "box-sargent", feature = "box-picasso", feature = "box-dali"))]
         tube("Mars yellow", "synthetic iron oxide hydroxide", "#c4872b", 0.85, 0.7, 1.1, drier::MARS),
         #[cfg(feature = "box-tonn")]
         tube("transparent oxide yellow", "transparent synthetic iron oxide", "#7a4a14", 0.2, 0.5, 0.9, drier::RED_EARTH),
-        #[cfg(feature = "box-alma-tadema")]
+        #[cfg(any(feature = "box-alma-tadema", feature = "box-leonardo", feature = "box-rembrandt", feature = "box-picasso", feature = "box-kahlo"))]
         tube("brown ochre", "iron oxide earth, a darker grade", "#86592e", 0.8, 0.7, 0.8, drier::OCHRE),
-        #[cfg(any(feature = "box-sargent", feature = "box-inness"))]
+        #[cfg(any(feature = "box-sargent", feature = "box-inness", feature = "box-van-gogh", feature = "box-miro", feature = "box-dali"))]
         tube("raw sienna", "sienna earth, unroasted", "#9a6a2b", 0.4, 0.5, 0.7, drier::SIENNA),
-        #[cfg(feature = "box-inness")]
+        #[cfg(any(feature = "box-inness", feature = "box-van-gogh"))]
         tube("orange chrome", "basic lead chromate", "#e0712a", 0.88, 0.75, 0.9, drier::CHROME_YELLOW),
         // Mars orange: "much transparency" in the period account (Salter's
         // Field, 1869), so less hiding than the other Mars tubes
-        #[cfg(feature = "box-sargent")]
+        #[cfg(any(feature = "box-sargent", feature = "box-picasso", feature = "box-miro", feature = "box-dali"))]
         tube("Mars orange", "synthetic iron oxide, an orange grade", "#b8602a", 0.5, 0.7, 1.1, drier::MARS),
-        #[cfg(feature = "box-sargent")]
+        #[cfg(any(feature = "box-sargent", feature = "box-leonardo", feature = "box-van-gogh"))]
         tube("red lead", "lead tetroxide", "#e0542b", 0.85, 0.8, 0.8, drier::RED_LEAD),
         #[cfg(feature = "box-alma-tadema")]
         tube("orange vermilion", "mercuric sulfide, a yellower grade", "#dd4a22", 0.9, 0.75, 1.0, drier::VERMILION),
         #[cfg(feature = "box-alma-tadema")]
         tube("Chinese vermilion", "mercuric sulfide, a deeper grade", "#b8282e", 0.9, 0.75, 1.0, drier::VERMILION),
-        #[cfg(any(feature = "box-sargent", feature = "box-tonn"))]
+        #[cfg(any(feature = "box-sargent", feature = "box-tonn", feature = "box-munch", feature = "box-miro", feature = "box-dali", feature = "box-kahlo"))]
         tube("cadmium red", "cadmium sulfoselenide", "#c3321f", 0.9, 0.7, 1.1, drier::CADMIUM),
-        #[cfg(feature = "box-sargent")]
+        #[cfg(any(feature = "box-sargent", feature = "box-picasso"))]
         tube("Mars red", "synthetic iron oxide", "#a33f2a", 0.9, 0.7, 1.2, drier::MARS),
-        #[cfg(feature = "box-inness")]
+        #[cfg(any(feature = "box-inness", feature = "box-dali"))]
         tube("Indian red", "nearly pure ferric oxide", "#7a3a33", 0.92, 0.7, 1.2, drier::RED_EARTH),
-        #[cfg(any(feature = "box-sargent", feature = "box-alma-tadema"))]
+        #[cfg(any(feature = "box-sargent", feature = "box-alma-tadema", feature = "box-leonardo", feature = "box-rembrandt", feature = "box-monet", feature = "box-van-gogh", feature = "box-munch", feature = "box-miro", feature = "box-dali"))]
         tube("rose madder", "madder lake on alumina", "#8e2238", 0.1, 0.35, 0.9, drier::MADDER_LAKE),
         #[cfg(feature = "box-tonn")]
         tube("permanent alizarin", "a quinacridone", "#5e1624", 0.15, 0.45, 1.3, drier::MADDER_LAKE),
         // an aniline dye laked on alumina: transparent, strong, at madder
         // lake's rate; it fades in light, which the engine doesn't model
-        #[cfg(feature = "box-sargent")]
+        #[cfg(any(feature = "box-sargent", feature = "box-kahlo"))]
         tube("magenta", "fuchsine (aniline) lake on alumina", "#8f1650", 0.1, 0.35, 1.5, drier::MADDER_LAKE),
-        #[cfg(any(feature = "box-sargent", feature = "box-alma-tadema", feature = "box-tonn", feature = "box-hopper"))]
+        #[cfg(any(feature = "box-sargent", feature = "box-alma-tadema", feature = "box-tonn", feature = "box-hopper", feature = "box-monet", feature = "box-miro", feature = "box-dali"))]
         tube("burnt sienna", "roasted sienna earth", "#7c3f24", 0.45, 0.55, 0.9, drier::SIENNA),
         // Mars brown at sienna's rate: iron oxides dry well but lack umber's
         // manganese (notes/r20/TUBES.md)
         #[cfg(feature = "box-sargent")]
         tube("Mars brown", "synthetic iron oxide, roasted", "#5a3a28", 0.85, 0.65, 1.0, drier::SIENNA),
-        #[cfg(feature = "box-sargent")]
+        #[cfg(any(feature = "box-sargent", feature = "box-leonardo"))]
         tube("bone brown", "bone roasted until brown", "#4b3527", 0.6, 0.6, 0.9, drier::BONE_BROWN),
-        #[cfg(feature = "box-inness")]
+        #[cfg(any(feature = "box-inness", feature = "box-leonardo"))]
         tube("bitumen", "asphaltum", "#2e2017", 0.12, 0.3, 0.7, drier::BITUMEN),
-        #[cfg(any(feature = "box-sargent", feature = "box-tonn", feature = "box-hopper"))]
+        #[cfg(any(feature = "box-sargent", feature = "box-tonn", feature = "box-hopper", feature = "box-monet", feature = "box-van-gogh", feature = "box-munch", feature = "box-picasso", feature = "box-miro", feature = "box-dali", feature = "box-kahlo"))]
         tube("cerulean blue", "cobalt stannate", "#3f82b3", 0.8, 0.7, 0.6, drier::COBALT_BLUE),
-        #[cfg(any(feature = "box-sargent", feature = "box-tonn", feature = "box-hopper"))]
+        #[cfg(any(feature = "box-sargent", feature = "box-tonn", feature = "box-hopper", feature = "box-monet", feature = "box-van-gogh", feature = "box-munch", feature = "box-picasso", feature = "box-miro", feature = "box-dali", feature = "box-kahlo"))]
         tube("ultramarine blue", "synthetic ultramarine", "#232a8c", 0.3, 0.5, 1.1, drier::ULTRAMARINE),
         // the last, palest extraction of natural ultramarine: mostly
         // colorless matter, so weak and transparent
@@ -169,13 +171,48 @@ pub fn catalog() -> Vec<Tube> {
         tube("ultramarine ash", "natural ultramarine, a pale last extraction", "#7d8aa8", 0.15, 0.5, 0.3, drier::ULTRAMARINE),
         #[cfg(feature = "box-inness")]
         tube("Antwerp blue", "Prussian blue on an alumina base", "#26406c", 0.4, 0.45, 1.6, drier::ANTWERP_BLUE),
-        #[cfg(any(feature = "box-sargent", feature = "box-alma-tadema", feature = "box-hopper"))]
+        #[cfg(any(feature = "box-sargent", feature = "box-alma-tadema", feature = "box-hopper", feature = "box-monet", feature = "box-van-gogh", feature = "box-munch", feature = "box-picasso", feature = "box-miro", feature = "box-dali"))]
         tube("viridian", "hydrated chromium oxide", "#1c4a40", 0.3, 0.5, 0.9, drier::VIRIDIAN),
-        #[cfg(feature = "box-sargent")]
+        #[cfg(any(feature = "box-sargent", feature = "box-monet", feature = "box-van-gogh", feature = "box-munch", feature = "box-picasso"))]
         tube("emerald green", "copper aceto-arsenite", "#23a57a", 0.6, 0.6, 0.6, drier::COPPER),
         // cobalt pigments are siccative in oil; set at cobalt blue's rate
-        #[cfg(any(feature = "box-sargent", feature = "box-tonn"))]
+        #[cfg(any(feature = "box-sargent", feature = "box-tonn", feature = "box-monet", feature = "box-van-gogh", feature = "box-munch", feature = "box-picasso", feature = "box-miro", feature = "box-dali"))]
         tube("cobalt violet", "cobalt phosphate or arsenate", "#7e4c8e", 0.35, 0.55, 0.35, drier::COBALT_BLUE),
+        // ---- round 22 (notes/r22/TUBES.md): the tubes the nine new boxes need that the catalog lacked
+        // charcoal (vine) black: cooler and weaker than bone black, a slow drier like lamp black
+        #[cfg(any(feature = "box-leonardo", feature = "box-rembrandt", feature = "box-munch", feature = "box-dali"))]
+        tube("charcoal black", "vegetable carbon (wood or vine charcoal)", "#232529", 0.75, 0.6, 0.7, drier::LAMP_BLACK),
+        // a copper blue: covers better than the ultramarines, tints weakly, a drier like the copper pigments
+        #[cfg(any(feature = "box-leonardo", feature = "box-rembrandt"))]
+        tube("azurite", "basic copper carbonate, the ground mineral", "#255786", 0.55, 0.5, 0.45, drier::COPPER),
+        // lazurite from lapis lazuli, a full-strength grade: translucent, deep violet-blue
+        #[cfg(feature = "box-leonardo")]
+        tube("natural ultramarine", "lazurite from lapis lazuli, a full-strength grade", "#1f276e", 0.25, 0.5, 0.8, drier::ULTRAMARINE),
+        // whiting (prepared chalk): a near-colourless body that gives paint body and translucency
+        // without colour. Not "chalk": that is the easel's chalk pencil, whose name every easel holds
+        #[cfg(feature = "box-rembrandt")]
+        tube("whiting", "calcium carbonate (chalk)", "#d0c5b2", 0.08, 0.75, 0.1, drier::RED_EARTH),
+        #[cfg(feature = "box-rembrandt")]
+        tube("Cassel earth", "humic earth (lignite brown)", "#45392f", 0.2, 0.4, 0.7, drier::BONE_BROWN),
+        #[cfg(feature = "box-rembrandt")]
+        tube("yellow lake", "buckthorn dye laked on chalk or alumina", "#8f6c12", 0.1, 0.35, 0.5, drier::MADDER_LAKE),
+        #[cfg(feature = "box-rembrandt")]
+        tube("cochineal lake", "cochineal (carminic acid) lake on alumina", "#6f1032", 0.1, 0.35, 0.8, drier::MADDER_LAKE),
+        // the nineteenth-century grade: denser and better covering than the madder lake
+        #[cfg(feature = "box-van-gogh")]
+        tube("carmine", "cochineal lake on an alumina and calcium base", "#6e1426", 0.3, 0.45, 1.2, drier::MADDER_LAKE),
+        // a cool, semi-transparent lemon without lead driers; it fades, which the engine doesn't model
+        #[cfg(any(feature = "box-monet", feature = "box-van-gogh"))]
+        tube("zinc yellow", "lead-free chromate yellow (zinc, barium or strontium chromate)", "#e5dd55", 0.45, 0.6, 0.5, drier::MARS),
+        // an eosin lake: a bright rose, transparent and strong; it fades fast, which the engine doesn't model
+        #[cfg(feature = "box-van-gogh")]
+        tube("geranium lake", "eosin lake on alumina", "#b11d45", 0.12, 0.3, 1.4, drier::MADDER_LAKE),
+        // tinting strength compressed from the measured ~8x lead white's, as Prussian blue's is
+        #[cfg(feature = "box-miro")]
+        tube("titanium white", "titanium dioxide", "#f5f5f2", 0.95, 0.6, 2.0, drier::ZINC_WHITE),
+        // cobalt yellow: a cool, transparent glazing yellow; cobalt pigments are siccative
+        #[cfg(feature = "box-dali")]
+        tube("aureolin", "potassium cobaltinitrite", "#d4a52a", 0.2, 0.4, 0.7, drier::COBALT_BLUE),
     ]
 }
 
@@ -266,6 +303,80 @@ const BOXES: &[(&str, &[&str])] = &[
         "hopper",
         &[
             "lead white", "zinc white", "pale cadmium", "cadmium yellow", "deep cadmium", "yellow ochre", "red earth", "burnt sienna", "bone black", "cerulean blue", "cobalt blue", "ultramarine blue", "viridian",
+        ],
+    ),
+    #[cfg(feature = "box-leonardo")]
+    (
+        "leonardo",
+        &[
+            "lead white", "lead-tin yellow", "yellow ochre", "brown ochre", "red earth", "vermilion", "rose madder", "red lead", "azurite", "natural ultramarine", "copper green", "raw umber",
+            "bone brown", "charcoal black", "bitumen",
+        ],
+    ),
+    #[cfg(feature = "box-rembrandt")]
+    (
+        "rembrandt",
+        &[
+            "lead white", "whiting", "lead-tin yellow", "yellow ochre", "yellow lake", "vermilion", "red earth", "rose madder", "cochineal lake", "brown ochre", "raw umber", "Cassel earth",
+            "bone black", "charcoal black", "smalt", "pale smalt", "azurite",
+        ],
+    ),
+    #[cfg(feature = "box-monet")]
+    (
+        "monet",
+        &[
+            "lead white", "zinc white", "Naples yellow", "chrome yellow", "zinc yellow", "pale cadmium", "cadmium yellow", "deep cadmium", "yellow ochre", "red earth", "burnt sienna", "vermilion",
+            "rose madder", "bone black", "Prussian blue", "cobalt blue", "ultramarine blue", "cerulean blue", "viridian", "emerald green", "cobalt violet",
+        ],
+    ),
+    #[cfg(feature = "box-van-gogh")]
+    (
+        "van-gogh",
+        &[
+            "lead white", "zinc white", "lemon chrome", "zinc yellow", "chrome yellow", "cadmium yellow", "deep cadmium", "orange chrome", "yellow ochre", "raw sienna", "red earth", "raw umber",
+            "vermilion", "red lead", "geranium lake", "carmine", "rose madder", "cobalt violet", "emerald green", "viridian", "cerulean blue", "cobalt blue", "ultramarine blue", "Prussian blue",
+            "bone black",
+        ],
+    ),
+    #[cfg(feature = "box-munch")]
+    (
+        "munch",
+        &[
+            "lead white", "zinc white", "vermilion", "cadmium red", "rose madder", "red earth", "yellow ochre", "raw umber", "chrome yellow", "lemon chrome", "pale cadmium", "cadmium yellow",
+            "deep cadmium", "viridian", "emerald green", "Prussian blue", "ultramarine blue", "cobalt blue", "cerulean blue", "cobalt violet", "bone black", "charcoal black",
+        ],
+    ),
+    #[cfg(feature = "box-picasso")]
+    (
+        "picasso",
+        &[
+            "lead white", "zinc white", "lemon chrome", "chrome yellow", "cadmium yellow", "yellow ochre", "Mars yellow", "Mars orange", "vermilion", "Mars red", "red earth", "brown ochre",
+            "bone black", "Prussian blue", "ultramarine blue", "cobalt blue", "cerulean blue", "viridian", "emerald green", "cobalt violet",
+        ],
+    ),
+    #[cfg(feature = "box-miro")]
+    (
+        "miro",
+        &[
+            "lead white", "zinc white", "titanium white", "pale cadmium", "cadmium yellow", "deep cadmium", "cadmium red", "vermilion", "rose madder", "Mars orange", "red earth", "raw sienna",
+            "burnt sienna", "raw umber", "cobalt blue", "cerulean blue", "ultramarine blue", "Prussian blue", "viridian", "cobalt violet", "bone black",
+        ],
+    ),
+    #[cfg(feature = "box-dali")]
+    (
+        "dali",
+        &[
+            "lead white", "zinc white", "Naples yellow", "aureolin", "lemon chrome", "pale cadmium", "cadmium yellow", "deep cadmium", "yellow ochre", "Mars yellow", "raw sienna", "Mars orange",
+            "red earth", "vermilion", "cadmium red", "rose madder", "Indian red", "burnt sienna", "bone black", "charcoal black", "cobalt blue", "cerulean blue", "ultramarine blue", "viridian",
+            "Rinmann's green", "cobalt violet",
+        ],
+    ),
+    #[cfg(feature = "box-kahlo")]
+    (
+        "kahlo",
+        &[
+            "lead white", "zinc white", "vermilion", "cadmium red", "red earth", "chrome yellow", "cadmium yellow", "yellow ochre", "brown ochre", "cerulean blue", "ultramarine blue", "magenta",
+            "bone black",
         ],
     ),
 ];
@@ -598,7 +709,7 @@ mod tests {
         }
         assert!(Palette::named_box("no such box").is_none());
         #[cfg(feature = "all-boxes")]
-        assert_eq!(Palette::box_names(), [DEFAULT_BOX, "sargent", "inness", "alma-tadema", "tonn", "hopper"]);
+        assert_eq!(Palette::box_names(), [DEFAULT_BOX, "sargent", "inness", "alma-tadema", "tonn", "hopper", "leonardo", "rembrandt", "monet", "van-gogh", "munch", "picasso", "miro", "dali", "kahlo"]);
     }
 }
 
