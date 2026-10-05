@@ -1,12 +1,14 @@
 # /// script
 # requires-python = ">=3.11"
+# dependencies = ["pillow"]
 # ///
 """Export the studio viewer as static files, painters only and scrubbed as --public is.
 
     uv run studio/export_static.py <out-dir> [--skip paint-studio-xxxxxx ...]
 
 Writes <out>/index.html (the viewer, reading files instead of the live API), <out>/data/sessions.json and,
-per painter, data/<painter>/events.json (with the image extensions), data/<painter>/img/<i>.<ext> and
+per painter, data/<painter>/events.json (with the image extensions), data/<painter>/img/<i>.<ext> (the look as the
+painter saw it), data/<painter>/v/<i>.jpg (the page's view, at most 1200 px) and t/<i>.jpg (the strip's thumbnail), and
 data/<painter>/file/<the painting's source> (from archive/sources/ once the painter's folder is gone). Every text response is scrubbed like the public server's
 (home folder -> ~, account name -> user); the export stops if a scrubbed file still names either.
 
@@ -15,7 +17,8 @@ deletes only the listed files it didn't write again. It won't write into a folde
 except an export from before the list (index.html with the static switch, data/sessions.json, nothing else
 at the top), which it adopts, owning all of data/ as the old exporter did.
 """
-import argparse, base64, json, os, re, sys
+import argparse, base64, io, json, os, re, sys
+from PIL import Image
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import studio as S
 
@@ -75,9 +78,28 @@ def write(path, data):
         fh.write(data)
 
 
+# the page shows a look at most 1200 px wide and the strip a 160 px thumbnail: a whole PNG (up to ~1 MB)
+# for each made the page slow to load. A look never changes, so each is made once.
+VIEWS = (("v", 1200, 82), ("t", 160, 70))
+
+
+def views(out, p, i, b64):
+    for sub, side, q in VIEWS:
+        dest = os.path.join(out, "data", p, sub, f"{i}.jpg")
+        WRITTEN.add(os.path.abspath(dest))
+        if os.path.isfile(dest):
+            continue
+        os.makedirs(os.path.dirname(dest), exist_ok=True)
+        im = Image.open(io.BytesIO(base64.b64decode(b64))).convert("RGB")
+        im.thumbnail((side, side))
+        part = f"{dest}.{os.getpid()}.part"   # two exports at once (a manual one beside the publisher) don't collide
+        im.save(part, "JPEG", quality=q)
+        os.replace(part, dest)
+
+
 def text(path, data):
     body = S.scrub(data if isinstance(data, bytes) else data.encode())
-    if S.HOME.encode() in body or re.search(re.escape(S.USER.encode()), body, re.I):
+    if S.HOME.encode() in body or S.account_name().search(body):
         sys.exit(f"export: {path} still names the home folder or account after scrubbing")
     write(path, body)
 
@@ -106,6 +128,7 @@ def main():
             exts.append(ext)
             if im:
                 write(os.path.join(out, "data", p, "img", f"{i}.{ext}"), base64.b64decode(im[1]))
+                views(out, p, i, im[1])
         n_img += n
         text(os.path.join(out, "data", p, "events.json"),
              json.dumps({"events": ev, "total": len(ev), "epoch": st["epoch"], "sittings": len(files), "imgext": exts}))

@@ -137,6 +137,9 @@ const STATIC = !!window.STUDIO_STATIC;
 let IMGEXT = [], lastStatic = 0;  // static: when events.json was last read (it's re-read every minute)
 const P = () => Q && Q.startsWith('p=') ? decodeURIComponent(Q.slice(2)) : '';
 const imgURL = i => STATIC ? `data/${encodeURIComponent(P())}/img/${i}.${IMGEXT[i] || 'png'}` : `/img?${Q}&i=${i}`;
+// the static export also has each look as a view (v/, at most 1200 px) and a thumbnail (t/): far lighter than the PNG
+const viewURL = i => STATIC ? `data/${encodeURIComponent(P())}/v/${i}.jpg` : imgURL(i);
+const thumbURL = i => STATIC ? `data/${encodeURIComponent(P())}/t/${i}.jpg` : imgURL(i);
 const sitLabel = e => `sitting ${e.n} · ${hhmm(e.ts)}`;
 const qOf = s => s.p ? 'p=' + encodeURIComponent(s.p) : 's=' + encodeURIComponent(s.s);
 
@@ -216,7 +219,7 @@ function paintedFor(i, t) {
 }
 const sittingAt = i => sitStarts.filter(b => b <= i).length;
 function thumb(e, i) {
-  const im = document.createElement('img'); im.loading = 'lazy'; im.src = imgURL(e.img); im.dataset.i = i; im.title = hhmm(e.ts) + '  ' + fname(e.path);
+  const im = document.createElement('img'); im.loading = 'lazy'; im.src = thumbURL(e.img); im.onerror = () => { im.onerror = null; im.src = imgURL(e.img); }; im.dataset.i = i; im.title = hhmm(e.ts) + '  ' + fname(e.path);
   im.onclick = () => { live = false; stop(); show(i); }; $('strip').appendChild(im);
   // fixed thumbnail size (CSS): the strip's width is known before the images load
   if (live) stripEnd();
@@ -233,8 +236,10 @@ function kindOf(e) {
   if (e.kind === 'read') return /\.(jpe?g|png)$/i.test(f) ? ['look', '👁', 'looks at the canvas'] : ['read', '📖', 'reads ' + f];
   if (e.kind === 'image') return ['look', '👁', 'looks at ' + (f || 'the canvas')];
   if (e.kind === 'look') return ['look', '👁', 'looks' + (e.text ? ' (' + e.text + ')' : ' at the canvas')];
-  if (e.kind === 'paint') { const ok = /ok · chunk/.test(e.out || ''), n = ((e.out || '').match(/ok · chunk (\d+)/) || [])[1];
-    return [ok ? 'code' : 'fail', '🖌', ok ? 'paints chunk ' + n : (e.out ? 'a chunk fails' : 'paints')]; }
+  // a chunk's reply ends `ok · chunk N` (before round 21.3) or `ok`; an error is flagged, or the reply lacks the ok
+  if (e.kind === 'paint') { const out = e.out || '', n = (out.match(/ok · chunk (\d+)/) || [])[1];
+    const ok = !e.err && (n !== undefined || /(^|\n)ok\s*$/.test(out));
+    return [ok ? 'code' : 'fail', '🖌', ok ? (n ? 'paints chunk ' + n : 'paints') : (out ? 'a chunk fails' : 'paints')]; }
   if (e.kind === 'jnote') return ['notes', '📝', 'writes in the journal'];
   if (e.kind === 'cmd') {
     const c = (e.text || '').replace(/^\s*((cd\s+\S+|export\s+[^;&\n]*|source\s+\S+|set\s+-\S+)\s*(&&|;|\n)\s*)+/, ''), fail = /error(\[|:)|panicked|FAILED/.test(e.out || '');
@@ -376,7 +381,7 @@ function show(i) {
   let img = null, imgK = -1; for (let k = pos; k >= 0; k--) if (events[k].kind === 'image') { img = events[k]; imgK = k; break; }
   // at the live edge of a sitting that's over, show the whole painting, not the last crop or squint it looked at
   if (live && pos === events.length - 1 && sittingOver()) { const k = lastWhole(); if (k >= 0) { img = events[k]; imgK = k; } }
-  if (img) { const u = imgURL(img.img); if (!$('img').src.endsWith(u)) $('img').src = u; $('cap').textContent = hhmm(img.ts) + '  ' + fname(img.path); }
+  if (img) { const u = viewURL(img.img); if (!$('img').src.endsWith(u)) { $('img').onerror = () => { $('img').onerror = null; $('img').src = imgURL(img.img); }; $('img').src = u; } $('cap').textContent = hhmm(img.ts) + '  ' + fname(img.path); }
   else noPicture();
   for (const t of $('strip').children) { const on = +t.dataset.i === imgK; t.classList.toggle('on', on); if (on && !live) t.scrollIntoView({ inline:'center', block:'nearest' }); }
   if (live) stripEnd();
@@ -420,6 +425,6 @@ document.onkeydown = e => { if (e.target.tagName === 'SELECT') return;
   const k = e.key; if (k === 'ArrowRight') { stop(); live = false; show(pos + 1); } else if (k === 'ArrowLeft') { stop(); live = false; show(pos - 1); }
   else if (k === '[') $('prevlook').click(); else if (k === ']') $('nextlook').click(); else if (k === 'l') goLive(); else if (k === 'c') $('togglecode').click();
   else if (k === 'Escape') $('zoom').style.display = 'none'; else if (k === ' ') { e.preventDefault(); $('play').click(); } };
-loadSessions().then(() => { poll(); setInterval(poll, 2000); setInterval(() => { status(); if (live && events.length && pos === events.length - 1 && sittingOver()) { const k = lastWhole(); if (k >= 0 && !$('img').src.endsWith(imgURL(events[k].img))) show(pos); } }, 1000); setInterval(loadSessions, 30000); });
+loadSessions().then(() => { poll(); setInterval(poll, 2000); setInterval(() => { status(); if (live && events.length && pos === events.length - 1 && sittingOver()) { const k = lastWhole(); if (k >= 0 && !$('img').src.endsWith(viewURL(events[k].img))) show(pos); } }, 1000); setInterval(loadSessions, 30000); });
 </script>
 </body></html>

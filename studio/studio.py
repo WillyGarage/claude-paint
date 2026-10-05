@@ -27,15 +27,24 @@ import urllib.parse
 from datetime import datetime
 
 SESSIONS = os.path.expanduser("~/.pi/agent/sessions")
+# Claude Code painters (harness/claude-code/paint.py): their own config folder's transcripts, one folder per
+# studio (-home-<you>-paint-studios-paint-studio-xxxxxx), and their studios in PAINT_STUDIOS
+CC_SESSIONS = os.path.join(os.path.expanduser(os.environ.get("PAINTER_CLAUDE_CONFIG", "~/.claude-paint")), "projects")
+STUDIO_ROOTS = [os.path.expanduser("~/src/a"), os.path.expanduser(os.environ.get("PAINT_STUDIOS", "~/paint-studios"))]
 # --public: painters only, nothing that names this machine's owner (for a link shown to others)
 PUBLIC = False
 HOME = os.path.expanduser("~")
 USER = os.path.basename(HOME)
 
 
+def account_name():
+    """The account name as a whole word only: a short name like "bill" is also inside "billowing"."""
+    return re.compile(rb"(?<![A-Za-z0-9])" + re.escape(USER.encode()) + rb"(?![A-Za-z0-9])", re.I)
+
+
 def scrub(body):
     """The home folder as ~ and the account name as `user`, in a response's text."""
-    return re.sub(re.escape(USER.encode()), b"user", body.replace(HOME.encode(), b"~"), flags=re.I)
+    return account_name().sub(b"user", body.replace(HOME.encode(), b"~"))
 HERE = os.path.dirname(os.path.abspath(__file__))
 _cache = {}  # path -> {"offset", "events", "images", "calls"}: one session file, parsed so far
 _streams = {}  # key -> a stitched stream of session files (see stream())
@@ -138,9 +147,11 @@ _subjects = {}  # studio -> (BRIEF.md mtime, "Friedrich" or "free")
 def _subject_of(brief):
     """The artist a brief names ("in the manner of Edward Hopper" -> "Hopper"; a surname like "Alma-Tadema"
     whole), "self-portrait" for one, else "free"."""
-    m = re.search(r"in\s+the\s+manner\s+of\s+((?:[A-Z][\w.'-]*\s+)*[A-Z][\w.'-]*)", brief)
+    m = re.search(r"in\s+the\s+manner\s+of\s+((?:[A-Z][\w.'-]*\s+(?:(?:van|da|de)\s+)?)*[A-Z][\w.'-]*)", brief)
     if m:
-        return m.group(1).split()[-1]
+        # the name it goes by: "Leonardo da Vinci" -> Leonardo, "Vincent van Gogh" -> Van Gogh, "Rembrandt van Rijn" -> Rembrandt
+        full = m.group(1)
+        return {"Vinci": "Leonardo", "Gogh": "Van Gogh", "Rijn": "Rembrandt"}.get(full.split()[-1], full.split()[-1])
     if "self-portrait" in brief.lower():
         return "self-portrait"
     return "free"
@@ -149,7 +160,8 @@ def _subject_of(brief):
 def subject(folder):
     """The artist the studio's brief names (e.g. "Friedrich", "Hopper"), "self-portrait", else "free" ("" without
     a brief)."""
-    f = os.path.join(os.path.expanduser("~/src/a"), folder, "BRIEF.md")
+    f = next((os.path.join(r, folder, "BRIEF.md") for r in STUDIO_ROOTS
+              if os.path.isfile(os.path.join(r, folder, "BRIEF.md"))), "")
     try:
         mt = os.path.getmtime(f)
     except OSError:
@@ -164,20 +176,52 @@ PAINTER = re.compile(r"^(paint-studio-[0-9a-f]+|paint-r\d+-p\d+|claude-paint-r\d
 
 
 def short(d):
-    """A session folder's short name: --Users-<you>-src-a-paint-studio-cfa19c-- -> paint-studio-cfa19c."""
-    return d.strip("-").split("-src-a-")[-1]
+    """A session folder's short name: --Users-<you>-src-a-paint-studio-cfa19c-- (pi) or
+    -home-<you>-paint-studios-paint-studio-cfa19c (Claude Code) -> paint-studio-cfa19c."""
+    m = re.search(r"-(paint-studio-[0-9a-f]+)-*$", d)
+    return m.group(1) if m else d.strip("-").split("-src-a-")[-1]
+
+
+_starts = {}  # path -> the time its first entry was written
+
+
+def started(path):
+    """A session file's start, for ordering a painter's sittings: pi names its files by their start time;
+    Claude Code names them by a random id, so its first timestamped entry gives the start."""
+    if path not in _starts:
+        ts = ""
+        try:
+            with open(path, "rb") as fh:
+                for _, line in zip(range(50), fh):
+                    try:
+                        ts = json.loads(line).get("timestamp") or ""
+                    except ValueError:
+                        continue
+                    if ts:
+                        break
+        except OSError:
+            pass
+        if not ts:
+            return os.path.basename(path)
+        _starts[path] = ts
+    return _starts[path]
+
+
+def session_globs(pattern):
+    """Session files under pi's sessions and the Claude Code painters' projects whose folder matches pattern."""
+    return glob.glob(os.path.join(SESSIONS, pattern, "*.jsonl")) + glob.glob(os.path.join(CC_SESSIONS, pattern, "*.jsonl"))
 
 
 def list_sessions():
     """One entry per painter folder (its sittings stitched: {"p": short name}) and, for
     everything else, one per session file ({"s": path}); newest activity first."""
     files = {}
-    for f in glob.glob(os.path.join(SESSIONS, "*paint*", "*.jsonl")):
+    for f in session_globs("*paint*"):
         files.setdefault(os.path.basename(os.path.dirname(f)), []).append(f)
     out = []
     for d, fs in files.items():
         name = short(d)
-        fs.sort(key=os.path.basename)  # session file names begin with the start time
+        fs.sort(key=started)
         info = [{"path": f, "model": session_model(f), "mtime": os.path.getmtime(f), "size": os.path.getsize(f)} for f in fs]
         if PAINTER.match(name):
             models = []
@@ -199,9 +243,9 @@ def painter_files(name):
     """The session files of a painter folder (given by its short name), in start order."""
     if not name or "/" in name or name.startswith("."):
         return []
-    for d in glob.glob(os.path.join(SESSIONS, "*" + name + "*")):
+    for d in glob.glob(os.path.join(SESSIONS, "*" + name + "*")) + glob.glob(os.path.join(CC_SESSIONS, "*" + name)):
         if short(os.path.basename(d)) == name:
-            return sorted(glob.glob(os.path.join(d, "*.jsonl")), key=os.path.basename)
+            return sorted(glob.glob(os.path.join(d, "*.jsonl")), key=started)
     return []
 
 
@@ -235,6 +279,9 @@ def _parse(path):
             d = json.loads(line)
         except ValueError:
             continue
+        if d.get("type") in ("user", "assistant") and "message" in d:   # a Claude Code transcript
+            claude_code_line(c, d)
+            continue
         ts = d.get("timestamp", "")
         if d.get("type") == "session":
             c["events"].append({"ts": ts, "kind": "start", "cwd": d.get("cwd", "")})
@@ -254,47 +301,94 @@ def _parse(path):
                 elif t == "thinking" and x.get("thinking", "").strip():
                     c["events"].append({"ts": ts, "kind": "think", "text": x["thinking"]})
                 elif t == "toolCall":
-                    name, a = x.get("name"), x.get("arguments", {}) or {}
-                    ev = {"ts": ts, "kind": "tool", "name": name, "id": x.get("id")}
-                    if name == "write":
-                        ev.update(kind="write", path=a.get("path", ""), content=a.get("content", ""))
-                    elif name == "edit":
-                        edits = a.get("edits") or [{"oldText": a.get("oldText", ""), "newText": a.get("newText", "")}]
-                        ev.update(kind="edit", path=a.get("path", ""), edits=edits)
-                    elif name in ("bash", "bg_start"):
-                        ev.update(kind="cmd", text=a.get("command", ""))
-                    elif name == "read":
-                        ev.update(kind="read", path=a.get("path", ""))
-                    elif name == "paint":  # the painter harness's easel tools (round 19 on)
-                        ev.update(kind="paint", code=a.get("lua", ""))
-                    elif name == "look":
-                        ev.update(kind="look", text=", ".join(f"{k} {v}" for k, v in a.items()))
-                    elif name == "note":
-                        ev.update(kind="jnote", text=a.get("text", ""))
-                    else:
-                        ev.update(text=json.dumps(a)[:300])
                     c["calls"][x.get("id")] = len(c["events"])
-                    c["events"].append(ev)
+                    c["events"].append(tool_event(ts, x.get("name"), x.get("arguments", {}) or {}, x.get("id")))
         elif role == "toolResult" and isinstance(content, list):
-            parent = c["calls"].get(m.get("toolCallId"))
-            txt = _text(content)
-            if parent is not None and (txt or m.get("isError")):
-                if txt:
-                    c["events"][parent]["out"] = txt[-1500:]
-                if m.get("isError"):
-                    c["events"][parent]["err"] = True
-                c["changed"].append(parent)
-            for x in content:
-                if x.get("type") == "image" and x.get("data"):
-                    idx = len(c["images"])
-                    c["images"].append((x.get("mimeType", "image/jpeg"), x["data"]))
-                    src = c["events"][parent].get("path", "") if parent is not None else ""
-                    c["events"].append({"ts": ts, "kind": "image", "img": idx, "path": src})
+            tool_result(c, ts, c["calls"].get(m.get("toolCallId")), content, m.get("isError"))
         elif role == "user":
             t = _text(content)
             if t.strip():
                 c["events"].append({"ts": ts, "kind": "user", "text": t[:2000]})
     return c["events"], c["images"]
+
+
+def tool_event(ts, name, a, call_id):
+    """A tool call as an event: the easel's tools (pi's, or Claude Code's mcp__easel__*), file and shell tools."""
+    if name and name.startswith("mcp__easel__"):
+        name = name[len("mcp__easel__"):]
+    ev = {"ts": ts, "kind": "tool", "name": name, "id": call_id}
+    if name == "write":
+        ev.update(kind="write", path=a.get("path", ""), content=a.get("content", ""))
+    elif name == "edit":
+        edits = a.get("edits") or [{"oldText": a.get("oldText", ""), "newText": a.get("newText", "")}]
+        ev.update(kind="edit", path=a.get("path", ""), edits=edits)
+    elif name in ("bash", "bg_start"):
+        ev.update(kind="cmd", text=a.get("command", ""))
+    elif name == "read":
+        ev.update(kind="read", path=a.get("path", ""))
+    elif name == "paint":  # the painter harness's easel tools (round 19 on)
+        ev.update(kind="paint", code=a.get("lua", ""))
+    elif name == "look":
+        ev.update(kind="look", text=", ".join(f"{k} {v}" for k, v in a.items()))
+    elif name == "note":
+        ev.update(kind="jnote", text=a.get("text", ""))
+    else:
+        ev.update(text=json.dumps(a)[:300])
+    return ev
+
+
+def tool_result(c, ts, parent, content, is_error):
+    """A tool's result: its text and error onto its call's event, and each image as an image event.
+    Images come as pi's {"type": "image", "data", "mimeType"} or the API's {"type": "image", "source": {...}}."""
+    if isinstance(content, str):
+        content = [{"type": "text", "text": content}]
+    txt = _text(content)
+    if parent is not None and (txt or is_error):
+        if txt:
+            c["events"][parent]["out"] = txt[-1500:]
+        if is_error:
+            c["events"][parent]["err"] = True
+        c["changed"].append(parent)
+    for x in content:
+        if x.get("type") != "image":
+            continue
+        src = x.get("source") or {}
+        data, mime = x.get("data") or src.get("data"), x.get("mimeType") or src.get("media_type", "image/jpeg")
+        if data:
+            idx = len(c["images"])
+            c["images"].append((mime, data))
+            path = c["events"][parent].get("path", "") if parent is not None else ""
+            c["events"].append({"ts": ts, "kind": "image", "img": idx, "path": path})
+
+
+def claude_code_line(c, d):
+    """One line of a Claude Code transcript (harness/claude-code painters) into events, as pi's are."""
+    ts = d.get("timestamp", "")
+    if d.get("cwd") and not c.get("started"):
+        c["started"] = True
+        c["events"].append({"ts": ts, "kind": "start", "cwd": d["cwd"]})
+    m = d.get("message") or {}
+    content = m.get("content")
+    if d["type"] == "assistant" and isinstance(content, list):
+        for x in content:
+            t = x.get("type")
+            if t == "text" and x.get("text", "").strip():
+                c["events"].append({"ts": ts, "kind": "say", "text": x["text"]})
+            elif t == "thinking" and x.get("thinking", "").strip():
+                c["events"].append({"ts": ts, "kind": "think", "text": x["thinking"]})
+            elif t == "tool_use":
+                c["calls"][x.get("id")] = len(c["events"])
+                c["events"].append(tool_event(ts, x.get("name"), x.get("input") or {}, x.get("id")))
+    elif d["type"] == "user":
+        if isinstance(content, str):
+            if content.strip() and not d.get("isMeta"):
+                c["events"].append({"ts": ts, "kind": "user", "text": content[:2000]})
+            return
+        for x in content or []:
+            if x.get("type") == "tool_result":
+                tool_result(c, ts, c["calls"].get(x.get("tool_use_id")), x.get("content") or [], x.get("is_error"))
+            elif x.get("type") == "text" and x.get("text", "").strip() and not d.get("isMeta"):
+                c["events"].append({"ts": ts, "kind": "user", "text": x["text"][:2000]})
 
 
 def _hhmm(ts):
